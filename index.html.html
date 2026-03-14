@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ravi — Senior PostgreSQL DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b10;
+    --surface: #0e131c;
+    --surface2: #141a26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --accent: #00e5a0;
+    --accent2: #00b37a;
+    --text: #e8edf5;
+    --muted: #6b7a96;
+    --muted2: #8c9ab5;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 4rem;
+    background: rgba(8,11,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--muted2);
+    text-decoration: none;
+    font-family: var(--mono);
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,160,0.06) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 32px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.25rem;
+  }
+  .name-accent { color: var(--accent); }
+  .hero-title {
+    font-family: var(--mono);
+    font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+    color: var(--muted2);
+    margin-bottom: 2rem;
+    letter-spacing: 0.03em;
+  }
+  .hero-desc {
+    max-width: 540px;
+    font-size: 1.15rem;
+    color: var(--muted2);
+    line-height: 1.75;
+    margin-bottom: 3rem;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #080b10;
+  }
+  .btn-primary:hover { background: #00f5ad; transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn-outline:hover { background: rgba(0,229,160,0.08); transform: translateY(-1px); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-top: 5rem;
+  }
+  .stat-item {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.4rem;
+    font-family: var(--mono);
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: var(--mono);
+    letter-spacing: 0.03em;
+  }
+
+  /* SECTIONS */
+  section { padding: 6rem 4rem; }
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+  .section-sub {
+    color: var(--muted2);
+    max-width: 540px;
+    margin-bottom: 3.5rem;
+    font-size: 1rem;
+  }
+
+  /* SKILLS GRID */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px;
+    border: 1.5px solid var(--border2);
+  }
+  .skill-card {
+    background: var(--surface);
+    padding: 2rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .skill-card:hover { background: var(--surface2); }
+  .skill-icon {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    background: rgba(0,229,160,0.06);
+  }
+  .skill-icon svg { width: 20px; height: 20px; }
+  .skill-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .skill-desc {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    color: var(--muted2);
+    letter-spacing: 0.05em;
+  }
+
+  /* ACHIEVEMENTS */
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+  .achievement-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .achievement-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .achievement-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .achievement-card:hover::before { opacity: 1; }
+  .achievement-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .achievement-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .achievement-desc {
+    font-size: 0.875rem;
+    color: var(--muted2);
+    line-height: 1.65;
+  }
+
+  /* EXPERIENCE */
+  .exp-list { display: flex; flex-direction: column; gap: 0; max-width: 760px; }
+  .exp-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 2rem;
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .exp-item:last-child { border-bottom: none; }
+  .exp-period {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 4px;
+    letter-spacing: 0.03em;
+  }
+  .exp-role {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .exp-company {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+  .exp-points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .exp-points li {
+    font-size: 0.875rem;
+    color: var(--muted2);
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .exp-points li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  /* CERTS */
+  .certs-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .cert-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+  .cert-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .cert-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+    letter-spacing: 0.03em;
+  }
+
+  /* CONTACT */
+  .contact-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    padding: 6rem 4rem;
+  }
+  .contact-section h2 { margin-bottom: 1rem; }
+  .contact-section p { color: var(--muted2); margin-bottom: 2.5rem; }
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  footer p {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 4rem;
+  }
+
+  /* PLATFORM LOGOS */
+  .platforms-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .platform-pill {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    color: var(--muted2);
+    letter-spacing: 0.04em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-tag, h1, .hero-title, .hero-desc, .hero-ctas {
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-tag { animation-delay: 0.1s; }
+  h1 { animation-delay: 0.2s; }
+  .hero-title { animation-delay: 0.3s; }
+  .hero-desc { animation-delay: 0.4s; }
+  .hero-ctas { animation-delay: 0.5s; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero, section { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2) { border-right: none; }
+    .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .divider { margin: 0 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ravi.dba</div>
+  <ul class="nav-links">
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#achievements">projects</a></li>
+    <li><a href="#experience">experience</a></li>
+    <li><a href="#contact">hire me</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag">Available for opportunities · Bengaluru, India</div>
+  <h1>Ravi<br><span class="name-accent">PostgreSQL</span><br>Expert.</h1>
+  <div class="hero-title">Senior DBA · 5+ Years · 700+ Production Instances</div>
+  <p class="hero-desc">
+    I manage enterprise-scale PostgreSQL fleets, architect high-availability database systems, and solve the kind of production incidents that wake people up at 3am — before they become disasters.
+  </p>
+  <div class="hero-ctas">
+    <a href="#contact" class="btn btn-primary">↗ Hire Me</a>
+    <a href="#achievements" class="btn btn-outline">View Projects</a>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num">700+</div>
+      <div class="stat-label">PostgreSQL instances managed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">5+</div>
+      <div class="stat-label">years of PostgreSQL expertise</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">9→17</div>
+      <div class="stat-label">pg versions covered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">database platforms mastered</div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-tag">// expertise</div>
+  <h2>What I Do</h2>
+  <p class="section-sub">End-to-end database operations — from daily administration to critical incident response.</p>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2zM8 17v2a2 2 0 002 2h4a2 2 0 002-2v-2"/></svg>
+      </div>
+      <div class="skill-name">WAL &amp; Backup / Recovery</div>
+      <div class="skill-desc">Architecting and managing WAL archiving, PITR strategies, and disaster recovery runbooks for enterprise-grade PostgreSQL clusters.</div>
+      <div class="skill-tags">
+        <span class="tag">WAL archiving</span>
+        <span class="tag">pg_basebackup</span>
+        <span class="tag">PITR</span>
+        <span class="tag">pgBackRest</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 19.07a10 10 0 010-14.14M15.54 8.46a5 5 0 010 7.07M8.46 15.54a5 5 0 010-7.07"/></svg>
+      </div>
+      <div class="skill-name">Fleet Management</div>
+      <div class="skill-desc">Overseeing 700+ PostgreSQL instances across versions 9.x to 17.x on enterprise Linux environments, including RHEL8 and RHEL9.</div>
+      <div class="skill-tags">
+        <span class="tag">700+ instances</span>
+        <span class="tag">RHEL8/9</span>
+        <span class="tag">pg 9→17</span>
+        <span class="tag">Ansible</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 4h16v2H4zM4 10h16v2H4zM4 16h16v2H4z"/></svg>
+      </div>
+      <div class="skill-name">Patch &amp; Upgrade Management</div>
+      <div class="skill-desc">Planning and executing patch cycles across production and non-production environments with minimal downtime. EDB/RHEL upgrade pipelines.</div>
+      <div class="skill-tags">
+        <span class="tag">EDB Postgres</span>
+        <span class="tag">Artifactory</span>
+        <span class="tag">patch rollback</span>
+        <span class="tag">change mgmt</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="skill-name">Performance Tuning</div>
+      <div class="skill-desc">Query optimization, execution plan analysis, index strategy, vacuum tuning, and memory configuration for high-throughput workloads.</div>
+      <div class="skill-tags">
+        <span class="tag">EXPLAIN ANALYZE</span>
+        <span class="tag">autovacuum</span>
+        <span class="tag">pg_stat_*</span>
+        <span class="tag">indexing</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <div class="skill-name">Scripting &amp; Automation</div>
+      <div class="skill-desc">Building shell and Python scripts to automate routine DBA tasks, monitoring, alerting, and compliance reporting across large fleets.</div>
+      <div class="skill-tags">
+        <span class="tag">Bash</span>
+        <span class="tag">Python</span>
+        <span class="tag">psql scripting</span>
+        <span class="tag">cron</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">
+        <svg fill="none" stroke="#00e5a0" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="skill-name">Multi-Platform DBA</div>
+      <div class="skill-desc">Cross-platform expertise across PostgreSQL, MS SQL Server, Oracle, and MySQL — enabling smooth database migrations and hybrid environments.</div>
+      <div class="skill-tags">
+        <span class="tag">MS SQL Server</span>
+        <span class="tag">Oracle</span>
+        <span class="tag">MySQL</span>
+        <span class="tag">migration</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="platforms-row">
+    <span class="platform-pill">PostgreSQL 9–17</span>
+    <span class="platform-pill">EDB Postgres</span>
+    <span class="platform-pill">MS SQL Server</span>
+    <span class="platform-pill">Oracle</span>
+    <span class="platform-pill">MySQL</span>
+    <span class="platform-pill">RHEL 8/9</span>
+    <span class="platform-pill">Microsoft Azure</span>
+    <span class="platform-pill">Linux</span>
+    <span class="platform-pill">Bash</span>
+    <span class="platform-pill">Python</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements">
+  <div class="section-tag">// notable projects</div>
+  <h2>Real Work,<br>Real Impact</h2>
+  <p class="section-sub">Incidents resolved, systems hardened, and infrastructure scaled — this is what I do on the job.</p>
+
+  <div class="achievements-grid">
+    <div class="achievement-card">
+      <div class="achievement-label">incident response</div>
+      <div class="achievement-title">Critical WAL Archive Disk Space Incident — Production Recovery</div>
+      <div class="achievement-desc">Managed a real-time production PostgreSQL WAL archive disk exhaustion incident from detection through resolution. Used iterative monitoring, live space calculations, and safe archival cleanup to restore system stability with zero data loss and minimal downtime.</div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-label">fleet operations</div>
+      <div class="achievement-title">700+ PostgreSQL Instances — Day-to-Day Operations at Scale</div>
+      <div class="achievement-desc">Responsible for the health, availability, and maintenance of a 700+ instance PostgreSQL fleet for a global Michelin production environment, spanning versions 9.x through 17.x across RHEL8 and RHEL9 infrastructure.</div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-label">patch management</div>
+      <div class="achievement-title">EU Non-Production Patching Pipeline — RHEL8/9 + EDB</div>
+      <div class="achievement-desc">Planned and executed multi-environment patch cycles for EU non-production PostgreSQL servers. Coordinated with EDB vendor on Artifactory availability incidents, maintained patch compliance reporting via Excel dashboards.</div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-label">automation</div>
+      <div class="achievement-title">Linux File Permission Management in PostgreSQL Environments</div>
+      <div class="achievement-desc">Designed and implemented Linux permission frameworks for PostgreSQL data directories, log paths, and archive locations — ensuring security compliance without disrupting running services across multi-version environments.</div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-label">performance</div>
+      <div class="achievement-title">Query Analysis &amp; Vacuum Tuning at Enterprise Scale</div>
+      <div class="achievement-desc">Conducted deep-dive performance investigations using pg_stat_activity, pg_stat_bgwriter, and EXPLAIN ANALYZE. Tuned autovacuum settings and indexing strategies to reduce bloat and improve query response times across high-traffic databases.</div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-label">multi-platform</div>
+      <div class="achievement-title">Cross-Platform Database Support — Oracle, MSSQL, MySQL</div>
+      <div class="achievement-desc">Delivered DBA support across PostgreSQL, MS SQL Server, Oracle, and MySQL platforms within the same client environment — a rare skill that enables seamless database migrations and hybrid infrastructure support.</div>
+    </div>
+  </div>
+</section>
+
+<!-- OPEN SOURCE PROJECTS -->
+<section id="projects" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-tag">// open source · github</div>
+  <h2>pg-dba-toolkit</h2>
+  <p class="section-sub">Production-tested PostgreSQL scripts built from managing a 700+ instance fleet. Every tool solves a real problem I've faced on the job.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2.5rem;">
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem; position: relative; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">Shell Script</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">WAL Archive Monitor</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">Monitors WAL archive disk usage with configurable warning/critical thresholds, file counts, and Nagios-compatible exit codes. Born from a real production incident.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">bash</span><span class="tag">WAL archiving</span><span class="tag">disk monitoring</span><span class="tag">Nagios</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/wal-monitor" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">SQL Report</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Autovacuum Analyzer</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">7-section SQL report covering dead tuple hotspots, disabled autovacuum, wraparound risk, and configuration audit. Runs against any PostgreSQL 10+ database.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">SQL</span><span class="tag">autovacuum</span><span class="tag">bloat</span><span class="tag">wraparound</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/vacuum-analyzer" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">SQL Report</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Slow Query Finder</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">Surfaces live slow queries, top consumers by avg/total time, high I/O queries, lock waits, cache hit ratio, and unused indexes in one script.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">SQL</span><span class="tag">pg_stat_statements</span><span class="tag">performance</span><span class="tag">locks</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/slow-query-finder" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">Shell + HTML</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">DB Health Dashboard</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">Generates a self-contained HTML dashboard showing connections, cache hit ratio, table sizes, replication role, and wraparound risk. Share with anyone — no setup needed.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">bash</span><span class="tag">HTML report</span><span class="tag">monitoring</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/health-dashboard" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">Shell Script</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Patch Readiness Checker</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">10-point pre-flight checklist before any PostgreSQL patch or upgrade. Checks connections, replication lag, prepared transactions, disk space, and more. Returns READY / NOT READY verdict.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">bash</span><span class="tag">patch management</span><span class="tag">pre-flight</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/patch-readiness" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+    <div style="background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">Shell + CSV</span>
+      </div>
+      <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Version Inventory</div>
+      <div style="font-size: 0.85rem; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem;">Scans a list of PostgreSQL hosts and collects version, role (primary/standby), uptime, max_connections, and data directory. Exports CSV for compliance reporting.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;">
+        <span class="tag">bash</span><span class="tag">fleet management</span><span class="tag">CSV report</span>
+      </div>
+      <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit/tree/main/version-inventory" target="_blank" style="font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none;">↗ View on GitHub</a>
+    </div>
+
+  </div>
+
+  <a href="https://github.com/RavikumarHeikrujam/pg-dba-toolkit" target="_blank" class="btn btn-outline" style="display: inline-flex;">↗ View All on GitHub</a>
+</section>
+
+<div class="divider"></div>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-tag">// work history</div>
+  <h2>Experience</h2>
+
+  <div class="exp-list">
+    <div class="exp-item">
+      <div class="exp-period">2022 — Present</div>
+      <div>
+        <div class="exp-role">Senior PostgreSQL DBA</div>
+        <div class="exp-company">Kyndryl · Client: Michelin</div>
+        <ul class="exp-points">
+          <li>Managing 700+ PostgreSQL instances (v9.x–17.x) across RHEL8/9</li>
+          <li>WAL archiving, PITR, and disaster recovery operations</li>
+          <li>Patch management, upgrade planning, and vendor coordination (EDB)</li>
+          <li>Performance tuning, vacuum optimization, and query analysis</li>
+          <li>Incident response and production system stabilization</li>
+          <li>Scripting and automation for fleet-wide DBA tasks</li>
+        </ul>
+      </div>
+    </div>
+    <div class="exp-item">
+      <div class="exp-period">2019 — 2022</div>
+      <div>
+        <div class="exp-role">Database Administrator</div>
+        <div class="exp-company">Previous Role · PostgreSQL / MSSQL / Oracle / MySQL</div>
+        <ul class="exp-points">
+          <li>Database administration across multiple platforms (PostgreSQL, MS SQL Server, Oracle, MySQL)</li>
+          <li>Backup and recovery strategy implementation</li>
+          <li>Performance monitoring and query optimization</li>
+          <li>Cross-platform database migration support</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CERTS -->
+<section>
+  <div class="section-tag">// certifications</div>
+  <h2>Credentials</h2>
+  <p class="section-sub">Formal certifications complementing 5+ years of hands-on production experience.</p>
+
+  <div class="certs-row">
+    <div class="cert-chip">
+      <span class="cert-dot"></span>
+      <span>
+        Microsoft Azure Fundamentals — AZ-900
+        <span class="cert-sub">Microsoft · 2024</span>
+      </span>
+    </div>
+    <div class="cert-chip">
+      <span class="cert-dot"></span>
+      <span>
+        PostgreSQL DBA — 5+ Years Production
+        <span class="cert-sub">Verified through enterprise fleet management</span>
+      </span>
+    </div>
+    <div class="cert-chip">
+      <span class="cert-dot"></span>
+      <span>
+        EDB Postgres Administration
+        <span class="cert-sub">Enterprise-grade PostgreSQL (EnterpriseDB)</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="section-tag" style="text-align:center;">// let's work together</div>
+  <h2>Open for Opportunities</h2>
+  <p>Available for full-time roles, consulting, and freelance PostgreSQL work.<br>Bengaluru-based, open to relocation (Kuwait, Dubai, remote).</p>
+  <div class="contact-links">
+    <a href="mailto:heikrujamrk@gmail.com" class="btn btn-primary">↗ Email Me</a>
+    <a href="https://linkedin.com/in/ravikumar-heikrujam" class="btn btn-outline">LinkedIn</a>
+    <a href="https://github.com/RavikumarHeikrujam" class="btn btn-outline">GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Ravikumar Heikrujam · PostgreSQL DBA · Bengaluru, India</p>
+  <p>Built from 5 years of production experi
